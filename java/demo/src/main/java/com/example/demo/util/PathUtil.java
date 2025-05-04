@@ -19,4 +19,25 @@ public class PathUtil {
 
         return newFileName;
     }
+
+    public static String getNewFileName(String saveDir,boolean need_suff){
+        String extension = "";
+        if(need_suff){
+            extension = ".png";
+        }
+
+        int index = 1;
+        String newFileName;
+        do {
+            newFileName = String.format("%08d", index) + extension;
+            index++;
+        } while (Files.exists(Paths.get(saveDir, newFileName+ extension)));
+
+        return newFileName;
+    }
+
+    public static String getFileName(String url){
+        String fileName = Paths.get(url).getFileName().toString();  // 直接获取文件名
+        return fileName;
+    }
 }

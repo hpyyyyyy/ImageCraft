@@ -43,6 +43,7 @@ def num_range(s: str) -> List[int]:
 @click.option('--noise-mode', help='Noise mode', type=click.Choice(['const', 'random', 'none']), default='const', show_default=True)
 @click.option('--projected-w', help='Projection result file', type=str, metavar='FILE')
 @click.option('--outdir', help='Where to save the output images', type=str, required=True, metavar='DIR')
+@click.option('--output-name', help='Custom name for the output image(s)', type=str, metavar='NAME')
 def generate_images(
     ctx: click.Context,
     network_pkl: str,
@@ -51,7 +52,8 @@ def generate_images(
     noise_mode: str,
     outdir: str,
     class_idx: Optional[int],
-    projected_w: Optional[str]
+    projected_w: Optional[str],
+    output_name: Optional[str]
 ):
     """Generate images using pretrained network pickle.
 
@@ -96,7 +98,9 @@ def generate_images(
         for idx, w in enumerate(ws):
             img = G.synthesis(w.unsqueeze(0), noise_mode=noise_mode)
             img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
-            img = PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(f'{outdir}/proj{idx:02d}.png')
+            # img = PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(f'{outdir}/proj{idx:02d}.png')
+            filename = f'{output_name or f"proj{idx:02d}"}.png'  # Use custom name if provided
+            PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(f'{outdir}/{filename}')
         return
 
     if seeds is None:
@@ -118,7 +122,9 @@ def generate_images(
         z = torch.from_numpy(np.random.RandomState(seed).randn(1, G.z_dim)).to(device)
         img = G(z, label, truncation_psi=truncation_psi, noise_mode=noise_mode)
         img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
-        PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(f'{outdir}/seed{seed:04d}.png')
+        # PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(f'{outdir}/seed{seed:04d}.png')
+        filename = f'{output_name or f"seed{seed:04d}"}.png'  # Use custom name if provided
+        PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(f'{outdir}/{filename}')
 
 
 #----------------------------------------------------------------------------
